@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mix E85">
+<title>Calculadora Mix E85</title>
+
+<style>
+:root{
+  --bg:#000;
+  --card:#1c1c1e;
+  --input:#2c2c2e;
+  --border:#38383a;
+  --text:#fff;
+  --secondary:#8e8e93;
+  --green:#30d158;
+  --blue:#0a84ff;
+  --orange:#ff9f0a;
+  --red:#ff453a;
+}
+
+*{
+  box-sizing:border-box;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+  background:var(--bg);
+  color:var(--text);
+  margin:0;
+  min-height:100%;
+}
+
+body{
+  padding:calc(env(safe-area-inset-top) + 16px)
+          calc(env(safe-area-inset-right) + 16px)
+          calc(env(safe-area-inset-bottom) + 24px)
+          calc(env(safe-area-inset-left) + 16px);
+}
+
+h1{
+  margin:0;
+  text-align:center;
+  font-size:24px;
+}
+
+.subtitle{
+  text-align:center;
+  color:var(--secondary);
+  margin:6px 0 18px;
+  font-size:13px;
+}
+
+.segmented{
+  display:flex;
+  gap:4px;
+  background:var(--card);
+  border-radius:12px;
+  padding:4px;
+  margin-bottom:16px;
+}
+
+.segmented button{
+  flex:1;
+  padding:12px;
+  border:none;
+  background:transparent;
+  color:var(--secondary);
+  border-radius:10px;
+  font-weight:600;
+  font-size:15px;
+}
+
+.segmented button.active{
+  background:#3a3a3c;
+  color:#fff;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:16px;
+}
+
+.card-title{
+  font-size:12px;
+  text-transform:uppercase;
+  color:var(--secondary);
+  margin-bottom:12px;
+}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:8px 0;
+}
+
+label{
+  font-size:15px;
+}
+
+.input-box{
+  display:flex;
+  align-items:center;
+  background:var(--input);
+  padding:10px;
+  border-radius:10px;
+  width:150px;
+  flex-shrink:0;
+}
+
+.input-box input{
+  width:100%;
+  background:none;
+  border:none;
+  outline:none;
+  color:#fff;
+  text-align:right;
+  font-size:16px;
+  min-height:24px;
+}
+
+.input-box span{
+  color:var(--secondary);
+  margin-left:6px;
+  font-size:14px;
+}
+
+.hidden{
+  display:none !important;
+}
+
+.result-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.result{
+  background:var(--input);
+  padding:14px;
+  border-radius:12px;
+  border-left:4px solid var(--blue);
+  min-width:0;
+}
+
+.result.etanol{
+  border-left:4px solid var(--green);
+}
+
+.label{
+  font-size:12px;
+  color:var(--secondary);
+}
+
+.main{
+  font-size:20px;
+  font-weight:700;
+  margin-top:4px;
+  overflow-wrap:anywhere;
+}
+
+.sub{
+  font-size:13px;
+  color:var(--orange);
+  margin-top:4px;
+}
+
+.summary{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px solid var(--border);
+  font-size:13px;
+}
+
+.quick{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:12px;
+}
+
+.quick button{
+  border:none;
+  background:var(--blue);
+  color:#fff;
+  padding:10px 14px;
+  border-radius:8px;
+  font-size:15px;
+  font-weight:600;
+}
+
+#error{
+  margin-top:12px;
+  color:var(--red);
+  font-weight:600;
+  font-size:13px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Calculadora Mix E85</h1>
+<div class="subtitle">Mistura considerando etanol existente na gasolina</div>
+
+<div class="segmented">
+  <button id="btnReais" class="active" type="button">Valor</button>
+  <button id="btnLitros" type="button">Litros</button>
+  <button id="btnTanque" type="button">Tanque</button>
+</div>
+
+<div class="card">
+  <div class="card-title">Abastecimento</div>
+
+  <div id="boxReais">
+    <div class="row">
+      <label for="targetReais">Valor Total</label>
+      <div class="input-box">
+        <span>R$</span>
+        <input id="targetReais" type="number" inputmode="decimal" value="200">
+      </div>
+    </div>
+  </div>
+
+  <div id="boxLitros" class="hidden">
+    <div class="row">
+      <label for="targetLitros">Volume Total</label>
+      <div class="input-box">
+        <input id="targetLitros" type="number" inputmode="decimal" value="50">
+        <span>L</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="boxTanque" class="hidden">
+    <div class="row">
+      <label for="litrosAtual">Litros no Tanque</label>
+      <div class="input-box">
+        <input id="litrosAtual" type="number" inputmode="decimal" value="10">
+        <span>L</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <label for="misturaAtual">Mistura Atual</label>
+      <div class="input-box">
+        <input id="misturaAtual" type="number" inputmode="decimal" value="32">
+        <span>%</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <label for="volumeFinal">Volume Final</label>
+      <div class="input-box">
+        <input id="volumeFinal" type="number" inputmode="decimal" value="50">
+        <span>L</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Parâmetros</div>
+
+  <div class="row">
+    <label for="precoGas">Preço Gasolina</label>
+    <div class="input-box">
+      <span>R$</span>
+      <input id="precoGas" type="number" inputmode="decimal" step="0.01" value="6.52">
+    </div>
+  </div>
+
+  <div class="row">
+    <label for="precoAlc">Preço Etanol</label>
+    <div class="input-box">
+      <span>R$</span>
+      <input id="precoAlc" type="number" inputmode="decimal" step="0.01" value="4.14">
+    </div>
+  </div>
+
+  <div class="row">
+    <label for="percAlcGas">Etanol na Gasolina</label>
+    <div class="input-box">
+      <input id="percAlcGas" type="number" inputmode="decimal" value="32">
+      <span>%</span>
+    </div>
+  </div>
+
+  <div class="row">
+    <label for="percAlvo">Mistura Desejada</label>
+    <div class="input-box">
+      <input id="percAlvo" type="number" inputmode="decimal" value="85">
+      <span>%</span>
+    </div>
+  </div>
+
+  <div class="quick">
+    <button type="button" onclick="setAlvo(50)">E50</button>
+    <button type="button" onclick="setAlvo(70)">E70</button>
+    <button type="button" onclick="setAlvo(85)">E85</button>
+    <button type="button" onclick="setAlvo(100)">E100</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Resultado</div>
+
+  <div class="result-grid">
+    <div class="result">
+      <div class="label">⛽ GASOLINA</div>
+      <div class="main" id="gasValor">R$ 0,00</div>
+      <div class="sub" id="gasLitros">0,00 L</div>
+    </div>
+
+    <div class="result etanol">
+      <div class="label">🌱 ETANOL</div>
+      <div class="main" id="alcValor">R$ 0,00</div>
+      <div class="sub" id="alcLitros">0,00 L</div>
+    </div>
+  </div>
+
+  <div class="summary">
+    <span>Total: <strong id="totalLitros">0,00 L</strong></span>
+    <span>Meta: <strong id="misturaInfo">E85</strong></span>
+  </div>
+
+  <div id="error"></div>
+</div>
+
+<script>
+var mode = "reais";
+
+function el(id){
+  return document.getElementById(id);
+}
+
+function numero(id){
+  var n = parseFloat(String(el(id).value).replace(",", "."));
+  return isNaN(n) ? 0 : n;
+}
+
+function moeda(v){
+  return v.toLocaleString("pt-BR", {
+    style:"currency",
+    currency:"BRL"
+  });
+}
+
+function litros(v){
+  return v.toLocaleString("pt-BR", {
+    minimumFractionDigits:2,
+    maximumFractionDigits:2
+  }) + " L";
+}
+
+function setAlvo(v){
+  el("percAlvo").value = v;
+  calcular();
+}
+
+function setMode(m){
+  mode = m;
+
+  ["btnReais","btnLitros","btnTanque"].forEach(function(id){
+    el(id).classList.remove("active");
+  });
+
+  ["boxReais","boxLitros","boxTanque"].forEach(function(id){
+    el(id).classList.add("hidden");
+  });
+
+  if(m === "reais"){
+    el("btnReais").classList.add("active");
+    el("boxReais").classList.remove("hidden");
+  }
+
+  if(m === "litros"){
+    el("btnLitros").classList.add("active");
+    el("boxLitros").classList.remove("hidden");
+  }
+
+  if(m === "tanque"){
+    el("btnTanque").classList.add("active");
+    el("boxTanque").classList.remove("hidden");
+  }
+
+  calcular();
+}
+
+el("btnReais").addEventListener("click", function(){ setMode("reais"); });
+el("btnLitros").addEventListener("click", function(){ setMode("litros"); });
+el("btnTanque").addEventListener("click", function(){ setMode("tanque"); });
+
+function calcular(){
+  try{
+    var pGas = numero("precoGas");
+    var pAlc = numero("precoAlc");
+    var eGas = numero("percAlcGas") / 100;
+    var eAlvo = numero("percAlvo") / 100;
+
+    el("error").textContent = "";
+
+    if(pGas <= 0 || pAlc <= 0){
+      return;
+    }
+
+    if(eAlvo <= eGas){
+      el("error").textContent = "A mistura desejada deve ser maior que o teor de etanol da gasolina.";
+      return;
+    }
+
+    var gas = 0;
+    var alc = 0;
+    var total = 0;
+
+    if(mode === "reais"){
+      var valor = numero("targetReais");
+
+      // Fração de gasolina necessária para atingir o teor alvo
+      var propGas = (1 - eAlvo) / (1 - eGas);
+      var propAlc = 1 - propGas;
+
+      if(propGas < 0 || propAlc < 0){
+        el("error").textContent = "Mistura impossível para os parâmetros informados.";
+        return;
+      }
+
+      var custoMedio = propGas * pGas + propAlc * pAlc;
+
+      if(custoMedio <= 0){
+        return;
+      }
+
+      total = valor / custoMedio;
+      gas = total * propGas;
+      alc = total * propAlc;
+    }
+    else if(mode === "litros"){
+      total = numero("targetLitros");
+
+      var propGasL = (1 - eAlvo) / (1 - eGas);
+      var propAlcL = 1 - propGasL;
+
+      gas = total * propGasL;
+      alc = total * propAlcL;
+    }
+    else{
+      var litrosAtual = numero("litrosAtual");
+      var misturaAtual = numero("misturaAtual") / 100;
+      var volumeFinal = numero("volumeFinal");
+
+      if(volumeFinal <= litrosAtual){
+        el("error").textContent = "O volume final deve ser maior que o volume atual.";
+        return;
+      }
+
+      var adicionar = volumeFinal - litrosAtual;
+      var etanolExistente = litrosAtual * misturaAtual;
+      var etanolDesejado = volumeFinal * eAlvo;
+      var etanolAdicionar = etanolDesejado - etanolExistente;
+
+      if(etanolAdicionar < 0){
+        el("error").textContent = "A mistura atual já está acima da meta desejada.";
+        return;
+      }
+
+      alc = etanolAdicionar;
+      gas = adicionar - alc;
+      total = volumeFinal;
+    }
+
+    if(gas < 0 || alc < 0 || !isFinite(gas) || !isFinite(alc)){
+      el("error").textContent = "Mistura impossível para os parâmetros informados.";
+      return;
+    }
+
+    el("gasValor").textContent = moeda(gas * pGas);
+    el("alcValor").textContent = moeda(alc * pAlc);
+    el("gasLitros").textContent = litros(gas);
+    el("alcLitros").textContent = litros(alc);
+    el("totalLitros").textContent = litros(total);
+    el("misturaInfo").textContent = "E" + Math.round(eAlvo * 100);
+
+    salvar();
+  }
+  catch(e){
+    el("error").textContent = "Erro nos cálculos.";
+  }
+}
+
+function salvar(){
+  try{
+    localStorage.setItem("mixe85", JSON.stringify({
+      precoGas: el("precoGas").value,
+      precoAlc: el("precoAlc").value,
+      percAlcGas: el("percAlcGas").value,
+      percAlvo: el("percAlvo").value
+    }));
+  }catch(e){}
+}
+
+function carregar(){
+  try{
+    var dados = localStorage.getItem("mixe85");
+    if(!dados) return;
+
+    dados = JSON.parse(dados);
+
+    if(dados.precoGas) el("precoGas").value = dados.precoGas;
+    if(dados.precoAlc) el("precoAlc").value = dados.precoAlc;
+    if(dados.percAlcGas) el("percAlcGas").value = dados.percAlcGas;
+    if(dados.percAlvo) el("percAlvo").value = dados.percAlvo;
+  }catch(e){}
+}
+
+document.querySelectorAll("input").forEach(function(input){
+  input.addEventListener("input", calcular);
+});
+
+carregar();
+calcular();
+</script>
+
+</body>
+</html>
